@@ -1,45 +1,95 @@
-// main-presenter.js
-
-import { render } from '../render';
-import CreateForm from '../view/create-form-view';
+import { render, replace } from '../framework/render.js';
 import EditForm from '../view/edit-form-view';
+import flatpickr from 'flatpickr';
 import PointView from '../view/point-view';
-import PointsList from '../view/point-list-view.js';
+import 'flatpickr/dist/flatpickr.min.css';
+import {isEscapeKey} from '../utils.js';
+export default class Presenter{
+  #pointModel;
+  #offerModel;
+  #destinationModel;
+  #container;
 
-export default class Presenter {
-  createFormViewComponent = new CreateForm();
-  editFormViewComponent = new EditForm();
-  pointsListViewComponent = new PointsList();
+  constructor(container, pointModel,offerModel,destinationModel){
+    const tripEventsList = document.createElement('ul');
+    tripEventsList.className = 'trip-events__list';
+    container.appendChild(tripEventsList);
+    this.#container = tripEventsList;
+    this.#pointModel = pointModel;
+    this.#offerModel = offerModel;
+    this.#destinationModel = destinationModel;
 
-  constructor({ container, model }) {
-    this.container = container;
-    this.model = model;
   }
 
-  init() {
-    // Рендерим список точек
-    render(this.pointsListViewComponent, this.container);
+  init(){
+    for(let i = 0; i < this.pointModel.getPoints().length; i++){
+      this.#renderPoint(this.pointModel.getPoints()[i]);
 
-    // Получаем данные из модели
-    const points = this.model.getPoints(); // Массив точек
-
-    // Рендерим каждую точку маршрута
-    points.forEach((point) => {
-      // Находим пункт назначения для текущей точки
-      const destination = this.model.getDestinationById(point.destination);
-
-      // Находим дополнительные опции для текущей точки
-      const pointOffers = point.offers.map((offerId) =>
-        this.model.getOfferById(point.type, offerId)
-      );
-
-      // Создаём и рендерим компонент точки маршрута
-      const pointView = new PointView(point, destination, pointOffers);
-      render(pointView, this.pointsListViewComponent.getElement());
+    }
+    flatpickr('#event-start-time-1', {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
     });
 
-    // Рендерим формы редактирования и создания
-    render(this.editFormViewComponent, this.pointsListViewComponent.getElement());
-    render(this.createFormViewComponent, this.pointsListViewComponent.getElement());
+    flatpickr('#event-end-time-1', {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
+    });
+  }
+
+  #renderPoint(pointData){
+    const escKeyDownHandler = (evt) => {
+      if (isEscapeKey(evt)) {
+        evt.preventDefault();
+        replaceEditToPoint();
+        document.removeEventListener('keydown', escKeyDownHandler);
+      }
+    };
+
+    const onPointButtonClick = ()=> {
+      replacePointToEdit();
+      document.addEventListener('keydown', escKeyDownHandler);
+    };
+
+    const onEditButtonClick = ()=> {
+      replaceEditToPoint();
+      document.removeEventListener('keydown', escKeyDownHandler);
+    };
+
+    const onFormSubmit = (evt)=> {
+      evt.preventDefault();
+      replaceEditToPoint();
+      document.removeEventListener('keydown', escKeyDownHandler);
+    };
+
+    const point = new PointView(pointData,this.offerModel,this.destinationModel,onPointButtonClick);
+    const editPoint = new EditForm(pointData,this.offerModel,this.destinationModel,
+      onFormSubmit,onEditButtonClick);
+
+    function replacePointToEdit(){
+      replace(editPoint,point);
+    }
+
+    function replaceEditToPoint(){
+      replace(point,editPoint);
+    }
+
+    render(point,this.#container);
+  }
+
+  get pointModel(){
+    return this.#pointModel;
+  }
+
+  get offerModel(){
+    return this.#offerModel;
+  }
+
+  get destinationModel(){
+    return this.#destinationModel;
+  }
+
+  get container(){
+    return this.#container;
   }
 }
