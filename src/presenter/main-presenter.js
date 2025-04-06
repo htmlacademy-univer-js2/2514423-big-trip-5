@@ -3,7 +3,8 @@ import EditForm from '../view/edit-form-view';
 import flatpickr from 'flatpickr';
 import PointView from '../view/point-view';
 import 'flatpickr/dist/flatpickr.min.css';
-import {isEscapeKey} from '../utils.js';
+import {isEscapeKey} from '../utils/utils.js';
+
 export default class Presenter{
   #pointModel;
   #offerModel;
