@@ -1,4 +1,4 @@
-import {calculateDuration} from '../utils';
+import {calculateDuration} from '../utils/utils.js';
 import AbstractView from '../framework/view/abstract-view.js';
 
 function createPointTemplate(point, destination, offers) {

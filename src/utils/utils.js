@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 export function getRandomArrayElement(items) {
   return items[Math.floor(Math.random() * items.length)];
 }
@@ -26,4 +27,29 @@ export function calculateDuration(dateFrom, dateTo) {
 
   return duration.trim();
 }
+function isPresentPoint(dateFrom,dateTo) {
+  return dateFrom && dateTo && !dayjs().isAfter(dateTo, 'D') && !dayjs().isBefore(dateFrom, 'D');
+}
+
+function isPastPoint(dueDate) {
+  return dueDate && dayjs().isAfter(dueDate, 'D');
+}
+
+function isFuturePoint(dueDate) {
+  return dueDate && dayjs().isBefore(dueDate, 'D');
+}
+function capitalizeString(word){
+  return word[0].toUpperCase() + word.slice(1);
+}
+function getOfferKeyword(title){
+  return title.split(' ').slice(-1);
+}
+
+export {
+  capitalizeString,
+  getOfferKeyword,
+  isPresentPoint,
+  isFuturePoint,
+  isPastPoint};
+
 export const isEscapeKey = (evt) => evt.key === 'Escape';
