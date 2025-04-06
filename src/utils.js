@@ -26,3 +26,4 @@ export function calculateDuration(dateFrom, dateTo) {
 
   return duration.trim();
 }
+export const isEscapeKey = (evt) => evt.key === 'Escape';

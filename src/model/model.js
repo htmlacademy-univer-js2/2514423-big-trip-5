@@ -4,28 +4,32 @@ import { mockPoints } from '../mock/point';
 const FIRST_ELEMENT = 0;
 
 export default class PointModel {
-  points = mockPoints;
-  pointOffers = mockOffers;
-  destinations = mockDestinations;
+  #points = mockPoints;
+  #pointOffers = mockOffers;
+  #destinations = mockDestinations;
 
-  getPoints() {
-    return this.points;
+  get points() {
+    return this.#points;
   }
 
-  getOffers() {
-    return this.pointOffers;
+  get destinations() {
+    return this.#destinations;
   }
 
-  getDestinations() {
-    return this.destinations;
+  get offers() {
+    return this.#pointOffers;
   }
 
-  getOfferById(type, id) {
-    return id ? this.pointOffers.filter((offer) => offer.type === type)[FIRST_ELEMENT].offers.find((item) => item.id === id)
-      : this.pointOffers.filter((offer) => offer.type === type)[FIRST_ELEMENT];
+  getOfferById(type, id){
+    return this.#pointOffers.filter((offer)=> offer.type === type)[FIRST_ELEMENT]
+      .offers.find((item)=>item.id === id);
+  }
+
+  getOfferByType(type){
+    return this.#pointOffers.filter((offer)=> offer.type === type)[FIRST_ELEMENT];
   }
 
   getDestinationById(id) {
-    return this.destinations.find((item) => item.id === id);
+    return this.#destinations.find((item) => item.id === id);
   }
 }
