@@ -1,36 +1,45 @@
 import { mockPoints } from '../mock/point';
 import { toCamelCase } from '../utils/common';
 import Observable from '../framework/observable.js';
-export default class PointModel extends Observable{
-  #points = mockPoints.map((point)=>toCamelCase(point));
 
-  get points(){
-    return this.#points;
+export default class PointModel extends Observable {
+  #pointList = mockPoints.map((point) => toCamelCase(point));
+
+  get points() {
+    return this.#pointList;
   }
 
-  updatePoints(updateType,update){
-    const index = this.#points.findIndex((point)=>point.id === update.id);
-    if (index === - 1){
-      throw new Error('I can\'t update this point');
+  updatePoints(updateType, updatedPoint) {
+    const index = this.#pointList.findIndex((point) => point.id === updatedPoint.id);
+    if (index === -1) {
+      throw new Error('Unable to update: point not found');
     }
-    this.#points = [...this.#points.slice(0,index),update,...this.#points.slice(index + 1)];
 
-    this._notify(updateType,update);
+    this.#pointList = [
+      ...this.#pointList.slice(0, index),
+      updatedPoint,
+      ...this.#pointList.slice(index + 1)
+    ];
+
+    this._notify(updateType, updatedPoint);
   }
 
-  addPoints(updateType,update){
-    this.#points = [...this.#points,update];
-
-    this._notify(updateType,update);
+  addPoints(updateType, newPoint) {
+    this.#pointList = [...this.#pointList, newPoint];
+    this._notify(updateType, newPoint);
   }
 
-  deletePoints(updateType,update){
-    const index = this.#points.findIndex((point)=>point.id === update.id);
-    if (index === - 1){
-      throw new Error('I can\'t update this point');
+  deletePoints(updateType, pointToDelete) {
+    const index = this.#pointList.findIndex((point) => point.id === pointToDelete.id);
+    if (index === -1) {
+      throw new Error('Unable to delete: point not found');
     }
-    this.#points = [...this.#points.slice(0,index),...this.#points.slice(index + 1)];
 
-    this._notify(updateType,update);
+    this.#pointList = [
+      ...this.#pointList.slice(0, index),
+      ...this.#pointList.slice(index + 1)
+    ];
+
+    this._notify(updateType, pointToDelete);
   }
 }

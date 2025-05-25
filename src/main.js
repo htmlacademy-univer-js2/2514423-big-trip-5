@@ -4,7 +4,7 @@ import FilterModel from './model/filter-model.js';
 import PointModel from './model/point-model.js';
 import OfferModel from './model/offer-model.js';
 import DestinationModel from './model/destination-model.js';
-import NewPointView from './view/new-point-view.js';
+import NewPointView from './view/new-point.js';
 import { render, RenderPosition } from './framework/render.js';
 
 const siteHeaderFiltersElement = document.querySelector('.trip-controls__filters');
@@ -35,7 +35,7 @@ function onNewPointFormClose() {
 }
 
 function onNewPointButtonClick() {
-  mainPresenter.createPoint();
+  mainPresenter.createNewPoint();
   newPointButtonComponent.element.disabled = true;
 }
 render(newPointButtonComponent,siteHeaderElement,RenderPosition.BEFOREEND);

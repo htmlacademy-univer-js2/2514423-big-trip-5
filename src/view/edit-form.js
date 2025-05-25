@@ -1,5 +1,5 @@
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
-import { capitalizeString, humanizeDate, getOfferKeyword } from '../utils/utls.js';
+import { capitalizeString, humanizeDate, getOfferKeyword } from '../utils/utils.js';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import he from 'he';
@@ -8,9 +8,9 @@ function createFormTemplate(state,offerModel,destinationModel,isNewPoint){
   const {
     basePrice,
     dateFrom,
-    dateTo,
     destination,
     offers,
+    dateTo,
     type
   } = state;
   const pointOffers = [];
@@ -18,7 +18,7 @@ function createFormTemplate(state,offerModel,destinationModel,isNewPoint){
     pointOffers.push(offerModel.getOfferById(type,offerId));
   }
 
-  const allOffers = offerModel.getOfferByType(type);
+  const offersAll = offerModel.getOfferByType(type);
   const {name, description, pictures} = destinationModel.getDestinationById(destination);
   return `
             <li class="trip-events__item">
@@ -118,11 +118,11 @@ function createFormTemplate(state,offerModel,destinationModel,isNewPoint){
                   </button>` : ''}
                 </header>
                 <section class="event__details">
-                  ${allOffers?.length > 0 ? `
+                  ${offersAll?.length > 0 ? `
                   <section class="event__section  event__section--offers">
                     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
                     <div class="event__available-offers">
-                    ${allOffers.map((offer)=> {
+                    ${offersAll.map((offer)=> {
     const keyword = getOfferKeyword(offer.title);
     return `
                       <div class="event__offer-selector">
@@ -163,7 +163,7 @@ function createFormTemplate(state,offerModel,destinationModel,isNewPoint){
 }
 
 export default class EditFormView extends AbstractStatefulView{
-  #allOffers;
+  #offersAll;
   #allDestination;
   #onFormSubmit;
   #onEditButtonClick;
@@ -175,7 +175,7 @@ export default class EditFormView extends AbstractStatefulView{
   constructor(pointModel,offerModel,destinationModel,onFormSubmit,onDeletePoint,onEditButtonClick){
     super();
     this._setState(this.parsePointToState(pointModel));
-    this.#allOffers = offerModel;
+    this.#offersAll = offerModel;
     this.#allDestination = destinationModel;
     this.#onEditButtonClick = onEditButtonClick;
     this.#isNewPoint = onEditButtonClick === undefined;
@@ -185,7 +185,7 @@ export default class EditFormView extends AbstractStatefulView{
   }
 
   get template(){
-    return createFormTemplate(this._state,this.#allOffers,this.#allDestination,this.#isNewPoint);
+    return createFormTemplate(this._state,this.#offersAll,this.#allDestination,this.#isNewPoint);
   }
 
   _restoreHandlers(){
@@ -277,7 +277,7 @@ export default class EditFormView extends AbstractStatefulView{
   #onTypeListChange = (evt)=>{
     evt.preventDefault();
     const targetType = evt.target.value;
-    const typeOffers = this.#allOffers.getOfferByType(targetType);
+    const typeOffers = this.#offersAll.getOfferByType(targetType);
     this.updateElement({
       type:targetType,
       typeOffers:typeOffers,
