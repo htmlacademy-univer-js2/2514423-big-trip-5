@@ -1,45 +1,80 @@
-import { mockPoints } from '../mock/point';
-import { toCamelCase } from '../utils/common';
+import { UpdateType } from '../const.js';
 import Observable from '../framework/observable.js';
 
 export default class PointModel extends Observable {
-  #pointList = mockPoints.map((point) => toCamelCase(point));
+  #pointsApi;
+  #points = [];
+  #loaded = false;
+
+  constructor(pointsApi) {
+    super();
+    this.#pointsApi = pointsApi;
+  }
+
+  async init() {
+    try {
+      const points = await this.#pointsApi.points;
+      this.#points = points.map(this.#adaptToClient);
+    } catch (err) {
+      this.#points = [];
+    }
+    this.#loaded = true;
+    this._notify(UpdateType.INIT);
+  }
 
   get points() {
-    return this.#pointList;
+    return this.#points;
   }
 
-  updatePoints(updateType, updatedPoint) {
-    const index = this.#pointList.findIndex((point) => point.id === updatedPoint.id);
-    if (index === -1) {
-      throw new Error('Unable to update: point not found');
+  get loaded() {
+    return this.#loaded;
+  }
+
+  async updatePoints(updateType, update) {
+    const index = this.#points.findIndex((point) => point.id === update.id);
+    if (index === - 1) {
+      throw new Error('I can\'t update this point');
     }
-
-    this.#pointList = [
-      ...this.#pointList.slice(0, index),
-      updatedPoint,
-      ...this.#pointList.slice(index + 1)
-    ];
-
-    this._notify(updateType, updatedPoint);
-  }
-
-  addPoints(updateType, newPoint) {
-    this.#pointList = [...this.#pointList, newPoint];
-    this._notify(updateType, newPoint);
-  }
-
-  deletePoints(updateType, pointToDelete) {
-    const index = this.#pointList.findIndex((point) => point.id === pointToDelete.id);
-    if (index === -1) {
-      throw new Error('Unable to delete: point not found');
+    try {
+      const response = await this.#pointsApi.updatePoints(update);
+      const updatePoint = this.#adaptToClient(response);
+      this.#points = [...this.#points.slice(0, index), updatePoint, ...this.#points.slice(index + 1)];
+      this._notify(updateType, updatePoint);
+    } catch {
+      throw new Error('I can\'t update this point');
     }
+  }
 
-    this.#pointList = [
-      ...this.#pointList.slice(0, index),
-      ...this.#pointList.slice(index + 1)
-    ];
+  addPoint(updateType, update) {
+    this.#points = [...this.#points, update];
 
-    this._notify(updateType, pointToDelete);
+    this._notify(updateType, update);
+  }
+
+  deletePoint(updateType, update) {
+    const index = this.#points.findIndex((point) => point.id === update.id);
+    if (index === - 1) {
+      throw new Error('I can\'t update this point');
+    }
+    this.#points = [...this.#points.slice(0, index), ...this.#points.slice(index + 1)];
+
+    this._notify(updateType, update);
+  }
+
+  #adaptToClient(point) {
+    const adaptedPoint = {
+      ...point,
+      dateFrom: point['date_from'] !== null ? new Date(point['date_from']) : point['date_from'],
+      dateTo: point['date_to'] !== null ? new Date(point['date_to']) : point['date_to'],
+      isFavorite: point['is_favorite'],
+      basePrice: point['base_price'],
+    };
+
+    delete adaptedPoint['date_from'];
+    delete adaptedPoint['date_to'];
+    delete adaptedPoint['is_favorite'];
+    delete adaptedPoint['base_price'];
+
+    return adaptedPoint;
   }
 }

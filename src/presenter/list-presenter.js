@@ -4,6 +4,7 @@ import { SortType, UserAction, UpdateType, FilterType } from '../const';
 import { sortPointByDay, sortPointByTime } from '../utils/utils.js';
 import {filter} from '../utils/filter.js';
 import EmptyListView from '../view/empty-list.js';
+import LoadingView from '../view/loading.js';
 import SortView from '../view/sort.js';
 import NewPointPresenter from './new-point-presenter.js';
 
@@ -18,6 +19,8 @@ export default class MainPresenter{
   #pointsPresenters = new Map();
   #sortComponent = null;
   #currentSortType = SortType.DAY;
+  #loadingComponent = new LoadingView();
+  #isLoading = true;
 
   constructor(container,pointModel,offerModel,destinationModel, filterModel, onNewPointDestroy){
     const tripEventsList = document.createElement('ul');
@@ -84,19 +87,26 @@ export default class MainPresenter{
 
   };
 
-  #renderSort(){
-    this.#sortComponent = new SortView({currentSortType: this.#currentSortType, onSortTypeChange: this.#onSortTypeChange});
-    render(this.#sortComponent,this.#mainContainer,RenderPosition.AFTERBEGIN);
+  #renderSort() {
+    if (this.#sortComponent) {
+      remove(this.#sortComponent);
+    }
+    this.#sortComponent = new SortView({ currentSortType: this.#currentSortType, onSortTypeChange: this.#onSortTypeChange });
+    render(this.#sortComponent, this.#mainContainer, RenderPosition.AFTERBEGIN);
   }
 
-  #renderPoints(){
+  #renderPoints() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
     const pointsCount = this.points.length;
-    if (pointsCount === 0){
-      render(new EmptyListView(this.#filterModel.filter),this.#pointsListElement,RenderPosition.AFTEREND);
+    if (pointsCount === 0) {
+      render(new EmptyListView(this.#filterModel.filter), this.#pointsListElement, RenderPosition.AFTEREND);
       return;
     }
     this.#renderSort();
-    for(let i = 0; i < pointsCount; i++){
+    for (let i = 0; i < pointsCount; i++) {
       const pointPresenter = new PointPresenter(
         this.container,
         this.offerModel,
@@ -104,19 +114,21 @@ export default class MainPresenter{
         this.#handleViewAction,
         this.#handleModeChange);
       pointPresenter.init(this.points[i]);
-      this.#pointsPresenters.set(this.points[i].id,pointPresenter);
+      this.#pointsPresenters.set(this.points[i].id, pointPresenter);
     }
   }
 
-  #clearPointList({resetSortType = false} = {}){
+  #clearPointList({ resetSortType = false } = {}) {
     this.#newPointPresenter.destroy();
-    this.#pointsPresenters.forEach((pointPresenter)=>pointPresenter.destroy());
+    this.#pointsPresenters.forEach((pointPresenter) => pointPresenter.destroy());
     this.#pointsPresenters.clear();
     remove(this.#sortComponent);
+    remove(this.#loadingComponent);
     if (resetSortType) {
       this.#currentSortType = SortType.DAY;
     }
   }
+
 
   #handleViewAction = (actionType, updateType, update) => {
     switch(actionType){
@@ -150,8 +162,18 @@ export default class MainPresenter{
         this.#clearPointList({resetRenderedPointCount: true, resetSortType: true});
         this.#renderPoints();
         break;
+      case UpdateType.INIT:
+        if (this.#pointModel.isLoaded && this.#offerModel.isLoaded && this.#destinationModel.isLoaded) {
+          this.#isLoading = false;
+          remove(this.#loadingComponent);
+          this.#renderPoints();
+        }
     }
   };
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#pointsListElement, RenderPosition.AFTERBEGIN);
+  }
 
   get container(){
     return this.#pointsListElement;
