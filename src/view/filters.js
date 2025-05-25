@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { capitalizeString } from '../utils/utls.js';
+import { capitalizeString } from '../utils/utils.js';
 
 function createFilterTemplate(filters,actualFilterType){
   return `

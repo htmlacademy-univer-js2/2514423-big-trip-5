@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { capitalizeString, getDurationTime, humanizeDate } from '../utils/utls.js';
+import { capitalizeString, getDurationTime, humanizeDate } from '../utils/utils.js';
 
 function createPointsTemplate(pointModel,offerModel,destinationModel){
   const {

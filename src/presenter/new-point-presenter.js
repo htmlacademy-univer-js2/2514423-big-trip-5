@@ -1,23 +1,23 @@
 import {remove, render, RenderPosition} from '../framework/render.js';
 import {nanoid} from 'nanoid';
 import {UserAction, UpdateType} from '../const.js';
-import EditFormView from '../view/edit-form-view.js';
+import EditFormView from '../view/edit-form.js';
 
 export default class NewPointPresenter {
-  #pointListContainer = null;
-  #onDataChange = null;
-  #onDestroy = null;
+  #pointsListElement = null;
+  #handleDataChange = null;
+  #handleDestroy = null;
 
-  #pointEditComponent = null;
+  #editPointView = null;
 
-  constructor(pointListContainer, onDataChange, onDestroy) {
-    this.#pointListContainer = pointListContainer;
-    this.#onDataChange = onDataChange;
-    this.#onDestroy = onDestroy;
+  constructor(pointsListElement, handleDataChange, handleDestroy) {
+    this.#pointsListElement = pointsListElement;
+    this.#handleDataChange = handleDataChange;
+    this.#handleDestroy = handleDestroy;
   }
 
   init(offerModel,destinationModel) {
-    if (this.#pointEditComponent !== null) {
+    if (this.#editPointView !== null) {
       return;
     }
     const blankPoint = {
@@ -30,7 +30,7 @@ export default class NewPointPresenter {
       isFavorite: false
     };
 
-    this.#pointEditComponent = new EditFormView(
+    this.#editPointView = new EditFormView(
       blankPoint,
       offerModel,
       destinationModel,
@@ -38,26 +38,26 @@ export default class NewPointPresenter {
       this.#onDeleteClick
     );
 
-    render(this.#pointEditComponent, this.#pointListContainer, RenderPosition.AFTERBEGIN);
+    render(this.#editPointView, this.#pointsListElement, RenderPosition.AFTERBEGIN);
 
     document.addEventListener('keydown', this.#escKeyDownHandler);
   }
 
   destroy() {
-    if (this.#pointEditComponent === null) {
+    if (this.#editPointView === null) {
       return;
     }
 
-    this.#onDestroy();
+    this.#handleDestroy();
 
-    remove(this.#pointEditComponent);
-    this.#pointEditComponent = null;
+    remove(this.#editPointView);
+    this.#editPointView = null;
 
     document.removeEventListener('keydown', this.#escKeyDownHandler);
   }
 
   #onFormSubmit = (_, point) => {
-    this.#onDataChange(
+    this.#handleDataChange(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
       {id: nanoid(), ...point},
