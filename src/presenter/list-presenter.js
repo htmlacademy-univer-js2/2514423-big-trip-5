@@ -1,77 +1,98 @@
-import flatpickr from 'flatpickr';
-import 'flatpickr/dist/flatpickr.min.css';
-import PointPresenter from './point-presenter';
-import { updateItem } from '../utils/common';
+import { render, replace,remove } from '../framework/render';
+import EditFormView from '../view/edit-form-view';
+import PointView from '../view/point-view';
 
-export default class MainPresenter{
+const Mode = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
+export default class PointPresenter{
+  #pointListContainer;
   #pointModel;
   #offerModel;
   #destinationModel;
-  #container;
-  #listPoints = [];
-  #pointsPresenters = new Map();
+  #pointComponent = null;
+  #editPointComponent = null;
+  #handlePointChange;
+  #handleModeChange;
+  #mode = Mode.DEFAULT;
 
-  constructor(container, pointModel,offerModel,destinationModel){
-    const tripEventsList = document.createElement('ul');
-    tripEventsList.className = 'trip-events__list';
-    container.appendChild(tripEventsList);
-    this.#container = tripEventsList;
-    this.#pointModel = pointModel;
+  constructor(pointListContainer,offerModel,destinationModel,handlePointChange,handleModeChange){
+    this.#pointListContainer = pointListContainer;
     this.#offerModel = offerModel;
     this.#destinationModel = destinationModel;
+    this.#handlePointChange = handlePointChange;
+    this.#handleModeChange = handleModeChange;
   }
 
-  init(){
-    this.#listPoints = [...this.#pointModel.points];
-    for(let i = 0; i < this.pointModel.points.length; i++){
-      this.#renderPoint(this.pointModel.points[i]);
+  init(pointData){
+    this.#pointModel = pointData;
+    const prevPointComponent = this.#pointComponent;
+    const prevEditPointComponent = this.#editPointComponent;
+
+    this.#pointComponent = new PointView(this.#pointModel,this.#offerModel,this.#destinationModel,
+      this.#onPointButtonClick,this.#handlePointChange);
+    this.#editPointComponent = new EditFormView(this.#pointModel,this.#offerModel,this.#destinationModel,
+      this.#onFormSubmit,this.#onEditButtonClick);
+
+    if(prevPointComponent === null || prevEditPointComponent === null){
+      render(this.#pointComponent,this.#pointListContainer);
+      return;
     }
-    flatpickr('#event-start-time-1', {
-      enableTime: true,
-      dateFormat: 'd/m/y H:i',
-    });
 
-    flatpickr('#event-end-time-1', {
-      enableTime: true,
-      dateFormat: 'd/m/y H:i',
-    });
-
+    if(this.#mode === Mode.DEFAULT){
+      replace(this.#pointComponent,prevPointComponent);
+    }
+    if(this.#mode === Mode.EDITING){
+      replace(this.#editPointComponent,prevEditPointComponent);
+    }
+    remove(prevPointComponent);
+    remove(prevEditPointComponent);
   }
 
-  #renderPoint(pointData){
-    const pointPresenter = new PointPresenter(this.container,this.offerModel,
-      this.destinationModel,this.#handlePointChange,this.#onModeChange);
-    pointPresenter.init(pointData);
-    this.#pointsPresenters.set(pointData.id,pointPresenter);
+  destroy() {
+    remove(this.#pointComponent);
+    remove(this.#editPointComponent);
   }
 
-  #clearPointsPresenters(){
-    this.#pointsPresenters.forEach((pointPresenter)=>pointPresenter.destroy());
-    this.#pointsPresenters.clear();
+  resetView(){
+    if(this.#mode !== Mode.DEFAULT){
+      this.#replaceFormToCard();
+    }
   }
 
-  #handlePointChange = (updatePoint) => {
-    this.#listPoints = updateItem(this.#listPoints, updatePoint);
-    this.#pointsPresenters.get(updatePoint.id).init(updatePoint);
+  #replaceCardToForm(){
+    replace(this.#editPointComponent,this.#pointComponent);
+    document.addEventListener('keydown', this.#escKeyDownHandler);
+    this.#handleModeChange();
+    this.#mode = Mode.EDITING;
+  }
+
+  #replaceFormToCard(){
+    replace(this.#pointComponent,this.#editPointComponent);
+    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    this.#mode = Mode.DEFAULT;
+  }
+
+  #escKeyDownHandler = (evt) => {
+    if (evt.key === 'Escape') {
+      evt.preventDefault();
+      this.#replaceFormToCard();
+    }
   };
 
-  #onModeChange = () =>{
-    this.#pointsPresenters.forEach((pointPresenter)=>pointPresenter.resetView());
+  #onPointButtonClick = ()=> {
+    this.#replaceCardToForm();
   };
 
-  get pointModel(){
-    return this.#pointModel;
-  }
+  #onEditButtonClick = ()=> {
+    this.#replaceFormToCard();
+  };
 
-  get offerModel(){
-    return this.#offerModel;
-  }
-
-  get destinationModel(){
-    return this.#destinationModel;
-  }
-
-  get container(){
-    return this.#container;
-  }
+  #onFormSubmit = (evt,editPoint)=> {
+    evt.preventDefault();
+    this.#handlePointChange(editPoint);
+    this.#replaceFormToCard();
+  };
 }

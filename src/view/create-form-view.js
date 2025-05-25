@@ -167,7 +167,7 @@ function createFormTemplate(){
 `;
 }
 
-export default class CreateForm extends AbstractView{
+export default class CreateFormView extends AbstractView{
   constructor(){
     super();
   }

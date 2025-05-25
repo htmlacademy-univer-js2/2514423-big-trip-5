@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { capitalizeString, getDurationTime, humanizeDate } from '../utils/utils.js';
+import { capitalizeString, getDurationTime, humanizeDate } from '../utils/utls.js';
 
 function createPointsTemplate(pointModel,offerModel,destinationModel){
   const {
@@ -61,7 +61,7 @@ function createPointsTemplate(pointModel,offerModel,destinationModel){
 `;
 }
 
-export default class Point extends AbstractView{
+export default class PointView extends AbstractView{
   pointModel;
   #offerModel;
   #destinationModel;

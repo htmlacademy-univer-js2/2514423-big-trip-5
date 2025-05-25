@@ -1,16 +1,16 @@
-import { filterType } from '../const';
-import { isFuturePoint, isPastPoint, isPresentPoint } from './utils';
+import { FilterType } from '../const';
+import { isFuturePoint, isPastPoint, isPresentPoint } from './utls';
 
 const filter = {
-  [filterType.EVERYTHING]: (points)=> points,
-  [filterType.FUTURE]: (points)=> points.filter((point)=>
-    isFuturePoint(point.date_from)
+  [FilterType.EVERYTHING]: (points)=> points,
+  [FilterType.FUTURE]: (points)=> points.filter((point)=>
+    isFuturePoint(point.dateFrom)
   ),
-  [filterType.PRESENT]: (points)=> points.filter((point)=>
-    isPresentPoint(point.date_from, point.date_to)
+  [FilterType.PRESENT]: (points)=> points.filter((point)=>
+    isPresentPoint(point.dateFrom, point.dateTo)
   ),
-  [filterType.PAST]: (points)=> points.filter((point)=>
-    isPastPoint(point.date_to)
+  [FilterType.PAST]: (points)=> points.filter((point)=>
+    isPastPoint(point.dateTo)
   )
 };
 
