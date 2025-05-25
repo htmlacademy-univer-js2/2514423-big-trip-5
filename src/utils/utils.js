@@ -1,32 +1,44 @@
 import dayjs from 'dayjs';
-export function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
+
+const DATE_FORMAT = 'D MMM';
+const DAYS_DIVIDER = 1000 * 60 * 60 * 24;
+const HOURS_DIVIDER = 1000 * 60 * 60;
+const MINUTES_DIVIDER = 1000 * 60;
+
+const getRandomInteger = (end, start = 0) => {
+  const lower = Math.ceil(Math.min(start, end));
+  const upper = Math.floor(Math.max(start, end));
+  const res = Math.random() * (upper - lower + 1) + lower;
+  return Math.floor(res);
+};
+
+function humanizeDate(dueDate,format = DATE_FORMAT) {
+  return dueDate ? dayjs(dueDate).format(format) : '';
 }
 
-export function calculateDuration(dateFrom, dateTo) {
-  const start = new Date(dateFrom);
-  const end = new Date(dateTo);
+function getDurationTime(start, end){
+  end = dayjs(end);
+  const duration = end.diff(start);
+  const days = Math.floor(duration / DAYS_DIVIDER);
+  const hours = Math.floor((duration % DAYS_DIVIDER) / HOURS_DIVIDER);
+  const minutes = Math.floor((duration % HOURS_DIVIDER) / MINUTES_DIVIDER);
 
-  const diffInMilliseconds = end - start;
-  const diffInMinutes = Math.floor(diffInMilliseconds / (1000 * 60));
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-  const remainingHours = diffInHours % 24;
-  const remainingMinutes = diffInMinutes % 60;
-  let duration = '';
-
-  if (diffInDays > 0) {
-    duration += `${diffInDays}D `;
+  if(days > 0){
+    return `${days.toString().padStart(2, '0')}D ${hours.toString().padStart(2, '0')}H ${minutes.toString().padStart(2, '0')}M`;
+  } else if(hours > 0){
+    return `${hours.toString().padStart(2, '0')}H ${minutes.toString().padStart(2, '0')}M`;
   }
-  if (remainingHours > 0) {
-    duration += `${remainingHours}H `;
-  }
-  if (remainingMinutes > 0) {
-    duration += `${remainingMinutes}M`;
-  }
-
-  return duration.trim();
+  return `${minutes.toString().padStart(2, '0')}M`;
 }
+
+function capitalizeString(word){
+  return word[0].toUpperCase() + word.slice(1);
+}
+
+function getOfferKeyword(title){
+  return title.split(' ').slice(-1);
+}
+
 function isPresentPoint(dateFrom,dateTo) {
   return dateFrom && dateTo && !dayjs().isAfter(dateTo, 'D') && !dayjs().isBefore(dateFrom, 'D');
 }
@@ -38,18 +50,14 @@ function isPastPoint(dueDate) {
 function isFuturePoint(dueDate) {
   return dueDate && dayjs().isBefore(dueDate, 'D');
 }
-function capitalizeString(word){
-  return word[0].toUpperCase() + word.slice(1);
-}
-function getOfferKeyword(title){
-  return title.split(' ').slice(-1);
-}
 
 export {
+  getRandomInteger,
+  humanizeDate,
+  getDurationTime,
   capitalizeString,
   getOfferKeyword,
   isPresentPoint,
   isFuturePoint,
-  isPastPoint};
-
-export const isEscapeKey = (evt) => evt.key === 'Escape';
+  isPastPoint
+};
