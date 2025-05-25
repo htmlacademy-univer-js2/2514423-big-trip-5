@@ -6,7 +6,7 @@ const FIRST_ELEMENT = 0;
 export default class OfferModel extends Observable {
   #offerList = [];
   #offersApi;
-  #loaded = false;
+  #isLoaded = false;
 
   constructor(offersApi) {
     super();
@@ -19,7 +19,7 @@ export default class OfferModel extends Observable {
     } catch (err) {
       this.#offerList = [];
     }
-    this.#loaded = true;
+    this.#isLoaded = true;
     this._notify(UpdateType.INIT);
   }
 
@@ -27,8 +27,8 @@ export default class OfferModel extends Observable {
     return this.#offerList;
   }
 
-  get loaded() {
-    return this.#loaded;
+  get isLoaded() {
+    return this.#isLoaded;
   }
 
   getOfferById(type, offerId) {
