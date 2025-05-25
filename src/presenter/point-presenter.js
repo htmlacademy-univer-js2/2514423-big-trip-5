@@ -75,6 +75,41 @@ export default class PointPresenter{
     }
   }
 
+  setSaving() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editpointCardView.updateElement({
+        isDisabled: true,
+        isSaving: true,
+      });
+    }
+  }
+
+  setDeleting() {
+    if (this.#mode === Mode.EDITING) {
+      this.#editpointCardView.updateElement({
+        isDisabled: true,
+        isDeleting: true,
+      });
+    }
+  }
+
+  setAborting() {
+    if (this.#mode === Mode.DEFAULT) {
+      this.#pointCardView.shake();
+      return;
+    }
+    const resetFormState = () => {
+      if (this.#mode === Mode.EDITING) {
+        this.#editpointCardView.updateElement({
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false,
+        });
+      }
+    };
+    this.#editpointCardView.shake(resetFormState);
+  }
+
   #replaceCardToForm(){
     replace(this.#editpointCardView,this.#pointCardView);
     document.addEventListener('keydown', this.#handleEscapeKey);
