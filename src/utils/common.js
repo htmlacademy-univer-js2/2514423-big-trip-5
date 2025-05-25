@@ -1,7 +1,3 @@
-function updateItem(items, update) {
-  return items.map((item) => item.id === update.id ? update : item);
-}
-
 function toCamelCase(obj){
   const keyMap = {
     'base_price': 'basePrice',
@@ -17,4 +13,4 @@ function toCamelCase(obj){
   }, {});
 }
 
-export { updateItem,toCamelCase };
+export { toCamelCase };

@@ -1,7 +1,7 @@
 const mockPoints = [
   {
     'id': '18354941-b6e7-4b3a-8018-f37535953ee2',
-    'base_price': 7535,
+    'base_price': 7525,
     'date_from': '2025-02-10T01:54:14.857Z',
     'date_to': '2025-02-10T18:13:14.857Z',
     'destination': '9a6007b0-5264-4c36-8a88-6922b41eec3c',
@@ -9,22 +9,11 @@ const mockPoints = [
     'offers': [],
     'type': 'drive'
   },
-
-  {
-    'id': 'e5bf700e-da71-400c-bab7-19bd7732fe63',
-    'base_price': 1367,
-    'date_from': '2025-02-11T18:18:14.857Z',
-    'date_to': '2025-02-13T03:59:14.857Z',
-    'destination': '9a6007b0-5264-4c36-8a88-6922b41eec3c',
-    'is_favorite': false,
-    'offers': [],
-    'type': 'check-in'
-  },
   {
     'id': '51a1c11a-aa54-4ad2-ab18-4f64a3c752ae',
-    'base_price': 7549,
-    'date_from': '2025-02-13T18:58:14.857Z',
-    'date_to': '2025-02-14T22:39:14.857Z',
+    'base_price': 7249,
+    'date_from': '2025-02-11T18:18:14.857Z',
+    'date_to': '2025-02-13T03:59:14.857Z',
     'destination': '4120ceda-ff48-4cb8-8a1f-eca7d5d76409',
     'is_favorite': true,
     'offers': [
@@ -33,6 +22,16 @@ const mockPoints = [
       '2c412c01-0236-4b5a-bc47-ed451484691a'
     ],
     'type': 'train'
+  },
+  {
+    'id': 'e5bf700e-da71-400c-bab7-19bd7732fe63',
+    'base_price': 1867,
+    'date_from': '2025-02-13T18:58:14.857Z',
+    'date_to': '2025-02-14T22:39:14.857Z',
+    'destination': '9a6007b0-5264-4c36-8a88-6922b41eec3c',
+    'is_favorite': false,
+    'offers': [],
+    'type': 'check-in'
   },
   {
     'id': 'bc7fc77d-1e0b-477f-a26f-100fa46108da',
@@ -84,7 +83,7 @@ const mockPoints = [
   },
   {
     'id': 'cca2abdb-3b4b-4b44-bd61-77b61d73c265',
-    'base_price': 4414,
+    'base_price': 4814,
     'date_from': '2025-02-24T12:19:14.857Z',
     'date_to': '2025-02-25T23:24:14.857Z',
     'destination': 'acc9c42e-e6b0-43b7-afc3-daf2a00f81ab',
@@ -96,7 +95,7 @@ const mockPoints = [
   },
   {
     'id': '3ba485b5-0202-4c6e-bca0-81239b97ce8a',
-    'base_price': 3945,
+    'base_price': 3949,
     'date_from': '2025-02-27T17:36:14.857Z',
     'date_to': '2025-03-01T03:31:14.857Z',
     'destination': '668323ce-bf78-4087-a47c-ba2653618630',
@@ -109,7 +108,7 @@ const mockPoints = [
   },
   {
     'id': '5e4fca0c-d8d5-454f-95a1-e8c34f09a90e',
-    'base_price': 8407,
+    'base_price': 8464,
     'date_from': '2025-03-02T04:45:14.857Z',
     'date_to': '2025-03-04T01:19:14.857Z',
     'destination': '656b79bb-6ed3-4fe8-a192-1f443e54db05',

@@ -8,6 +8,6 @@ export default class DestinationModel{
   }
 
   getDestinationById(id){
-    return this.#destinations.find((item)=>item.id === id);
+    return this.#destinations.find((item)=>item.id === id) || {name: '', description: '', pictures: []};
   }
 }

@@ -1,7 +1,10 @@
-import AbstractView from '../framework/view/abstract-view.js';
+import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { capitalizeString, humanizeDate, getOfferKeyword } from '../utils/utls.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import he from 'he';
 
-function createFormTemplate(pointModel,offerModel,destinationModel){
+function createFormTemplate(state,offerModel,destinationModel,isNewPoint){
   const {
     basePrice,
     dateFrom,
@@ -9,8 +12,7 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
     destination,
     offers,
     type
-  } = pointModel;
-
+  } = state;
   const pointOffers = [];
   for(const offerId of offers){
     pointOffers.push(offerModel.getOfferById(type,offerId));
@@ -85,11 +87,9 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
                     <label class="event__label  event__type-output" for="event-destination-1">
                       ${capitalizeString(type)}
                     </label>
-                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${name}" list="destination-list-1">
+                    <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${he.encode(name)}" list="destination-list-1">
                     <datalist id="destination-list-1">
-                      <option value="Amsterdam"></option>
-                      <option value="Geneva"></option>
-                      <option value="Chamonix"></option>
+                    ${destinationModel.destinations.map((dest)=>`<option value="${dest.name}"></option>`)}
                     </datalist>
                   </div>
 
@@ -113,9 +113,9 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
 
                   <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
                   <button class="event__reset-btn" type="reset">Delete</button>
-                  <button class="event__rollup-btn" type="button">
+                  ${!isNewPoint ? `<button class="event__rollup-btn" type="button">
                     <span class="visually-hidden">Open event</span>
-                  </button>
+                  </button>` : ''}
                 </header>
                 <section class="event__details">
                   ${allOffers?.length > 0 ? `
@@ -126,8 +126,12 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
     const keyword = getOfferKeyword(offer.title);
     return `
                       <div class="event__offer-selector">
-                        <input class="event__offer-checkbox visually-hidden" id="event-offer-${keyword}-1"
-                         type="checkbox" name="event-offer-${keyword}" ${pointOffers.includes(offer) && 'checked'}>
+                        <input class="event__offer-checkbox visually-hidden"
+                         id="event-offer-${keyword}-1"
+                         type="checkbox"
+                         name="event-offer-${keyword}"
+                         ${pointOffers.includes(offer) && 'checked'}
+                         data-offer-id="${offer.id}">
                         <label class="event__offer-label" for="event-offer-${keyword}-1">
                           <span class="event__offer-title">${offer.title}</span>
                           &plus;&euro;&nbsp;
@@ -158,27 +162,140 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
   `;
 }
 
-export default class EditFormView extends AbstractView{
-  #pointModel;
-  #offerModel;
-  #destinationModel;
-  #editForm;
-  #closeButton;
+export default class EditFormView extends AbstractStatefulView{
+  #allOffers;
+  #allDestination;
   #onFormSubmit;
+  #onEditButtonClick;
+  #onDeletePoint;
+  #datepickerStart;
+  #datepickerEnd;
+  #isNewPoint = false;
 
-  constructor(pointModel,offerModel,destinationModel,onFormSubmit,onEditButtonClick){
+  constructor(pointModel,offerModel,destinationModel,onFormSubmit,onDeletePoint,onEditButtonClick){
     super();
-    this.#pointModel = pointModel;
-    this.#offerModel = offerModel;
-    this.#destinationModel = destinationModel;
-    this.#editForm = this.element.querySelector('.event--edit');
-    this.#closeButton = this.element.querySelector('.event__rollup-btn');
-    this.#closeButton.addEventListener('click', onEditButtonClick);
+    this._setState(this.parsePointToState(pointModel));
+    this.#allOffers = offerModel;
+    this.#allDestination = destinationModel;
+    this.#onEditButtonClick = onEditButtonClick;
+    this.#isNewPoint = onEditButtonClick === undefined;
     this.#onFormSubmit = onFormSubmit;
-    this.#editForm.addEventListener('submit', (evt)=>this.#onFormSubmit(evt, this.#pointModel));
+    this.#onDeletePoint = onDeletePoint;
+    this._restoreHandlers();
   }
 
   get template(){
-    return createFormTemplate(this.#pointModel,this.#offerModel,this.#destinationModel);
+    return createFormTemplate(this._state,this.#allOffers,this.#allDestination,this.#isNewPoint);
+  }
+
+  _restoreHandlers(){
+    this.element.querySelector('form').addEventListener('submit', this.#onFormStateSubmit);
+    if (!this.#isNewPoint){
+      this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#onEditButtonClick);
+    }
+    this.element.querySelector('.event__type-group').addEventListener('change',(evt) => {
+      this.#onTypeListChange(evt);
+    });
+    this.element.querySelector('.event__input--destination').addEventListener('change',(evt) => {
+      this.#onCityChange(evt);
+    });
+    this.element.querySelector('.event__reset-btn').addEventListener('click',(evt) => {
+      this.#onDeleteStateButton(evt);
+    });
+    this.element.querySelector('.event__input--price').addEventListener('input', this.#onPriceInput);
+    this.element.querySelectorAll('.event__offer-checkbox').forEach(
+      (checkbox) => checkbox.addEventListener('change', this.#onOfferChange)
+    );
+    this.#setDatepickerStart();
+    this.#setDatepickerEnd();
+  }
+
+  #setDatepickerStart = () => {
+    if (this.#datepickerStart) {
+      this.#datepickerStart.destroy();
+    }
+    this.#datepickerStart = flatpickr(this.element.querySelector('#event-start-time-1'), {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
+      onChange: (selectedDates) => {
+        if(selectedDates[0] < new Date(this._state.dateTo)){
+          this._setState({ dateFrom: selectedDates[0].toISOString()});
+        }
+      }
+    });
+  };
+
+  #setDatepickerEnd = () => {
+    if (this.#datepickerEnd) {
+      this.#datepickerEnd.destroy();
+    }
+    this.#datepickerEnd = flatpickr(this.element.querySelector('#event-end-time-1'), {
+      enableTime: true,
+      dateFormat: 'd/m/y H:i',
+      onChange: (selectedDates) => {
+        if(selectedDates[0] > new Date(this._state.dateFrom)){
+          this._setState({ dateTo: selectedDates[0].toISOString()});
+        }
+      }
+    });
+  };
+
+  #onPriceInput = (evt) => {
+    const price = parseInt(evt.target.value, 10);
+    if(!isNaN(price)){
+      this._setState({
+        basePrice: price
+      });
+    }
+  };
+
+  #onOfferChange = (evt) => {
+    const offerId = evt.target.dataset.offerId;
+    const newOffers = evt.target.checked
+      ? [...this._state.offers, offerId]
+      : this._state.offers.filter((id) => id !== offerId);
+    this._setState({
+      offers: newOffers
+    });
+  };
+
+  #onFormStateSubmit = (evt) => {
+    evt.preventDefault();
+    this.#onFormSubmit(evt, EditFormView.parseStateToPoint(this._state));
+  };
+
+  #onCityChange = (evt) => {
+    const city = evt.target.value;
+    const newDestination = this.#allDestination.destinations.find((destination)=> (destination.name || '') === city)?.id;
+    if (newDestination){
+      this.updateElement({
+        destination:newDestination
+      });
+    }
+  };
+
+  #onTypeListChange = (evt)=>{
+    evt.preventDefault();
+    const targetType = evt.target.value;
+    const typeOffers = this.#allOffers.getOfferByType(targetType);
+    this.updateElement({
+      type:targetType,
+      typeOffers:typeOffers,
+    });
+  };
+
+  #onDeleteStateButton = (evt) => {
+    evt.preventDefault();
+    this.#onDeletePoint(EditFormView.parseStateToPoint(this._state));
+  };
+
+  parsePointToState(point){
+    return{
+      ...point,
+    };
+  }
+
+  static parseStateToPoint(state){
+    return { ...state };
   }
 }
