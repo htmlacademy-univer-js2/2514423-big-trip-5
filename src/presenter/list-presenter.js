@@ -1,98 +1,159 @@
-import { render, replace,remove } from '../framework/render';
-import EditFormView from '../view/edit-form-view';
-import PointView from '../view/point-view';
+import PointPresenter from './point-presenter';
+import { render, RenderPosition, remove } from '../framework/render';
+import { SortType, UserAction, UpdateType, FilterType } from '../const';
+import { sortPointByDay, sortPointByTime } from '../utils/utls';
+import {filter} from '../utils/filter.js';
+import EmptyListView from '../view/empty-list-view';
+import SortView from '../view/sort-view';
+import NewPointPresenter from './new-point-presenter.js';
 
-const Mode = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
-};
-
-export default class PointPresenter{
-  #pointListContainer;
+export default class MainPresenter{
   #pointModel;
   #offerModel;
   #destinationModel;
-  #pointComponent = null;
-  #editPointComponent = null;
-  #handlePointChange;
-  #handleModeChange;
-  #mode = Mode.DEFAULT;
+  #filterModel;
+  #bigContainer;
+  #listContainer;
+  #newPointPresenter;
+  #pointsPresenters = new Map();
+  #sortComponent = null;
+  #actualSortType = SortType.DAY;
 
-  constructor(pointListContainer,offerModel,destinationModel,handlePointChange,handleModeChange){
-    this.#pointListContainer = pointListContainer;
+  constructor(container,pointModel,offerModel,destinationModel, filterModel, onNewPointDestroy){
+    const tripEventsList = document.createElement('ul');
+    tripEventsList.className = 'trip-events__list';
+    container.appendChild(tripEventsList);
+    this.#bigContainer = container;
+    this.#listContainer = tripEventsList;
+    this.#pointModel = pointModel;
     this.#offerModel = offerModel;
+    this.#filterModel = filterModel;
     this.#destinationModel = destinationModel;
-    this.#handlePointChange = handlePointChange;
-    this.#handleModeChange = handleModeChange;
+    this.#pointModel.addObserver(this.#onModelEvent);
+    this.#filterModel.addObserver(this.#onModelEvent);
+    this.#newPointPresenter = new NewPointPresenter(
+      tripEventsList,
+      this.#onViewAction,
+      onNewPointDestroy
+    );
   }
 
-  init(pointData){
-    this.#pointModel = pointData;
-    const prevPointComponent = this.#pointComponent;
-    const prevEditPointComponent = this.#editPointComponent;
+  get points(){
+    const filterType = this.#filterModel.filter;
+    const points = this.#pointModel.points;
+    const filteredPoints = filter[filterType](points);
+    switch(this.#actualSortType){
+      case SortType.DAY:
+        filteredPoints.sort(sortPointByDay);
+        break;
+      case SortType.TIME:
+        filteredPoints.sort(sortPointByTime);
+        break;
+      case SortType.PRICE:
+        filteredPoints.sort((a,b)=>b.basePrice - a.basePrice);
+        break;
+    }
+    return filteredPoints;
+  }
 
-    this.#pointComponent = new PointView(this.#pointModel,this.#offerModel,this.#destinationModel,
-      this.#onPointButtonClick,this.#handlePointChange);
-    this.#editPointComponent = new EditFormView(this.#pointModel,this.#offerModel,this.#destinationModel,
-      this.#onFormSubmit,this.#onEditButtonClick);
+  get offerModel(){
+    return this.#offerModel;
+  }
 
-    if(prevPointComponent === null || prevEditPointComponent === null){
-      render(this.#pointComponent,this.#pointListContainer);
+  get destinationModel(){
+    return this.#destinationModel;
+  }
+
+  init(){
+    this.#renderPoints();
+  }
+
+  createPoint = () => {
+    this.#actualSortType = SortType.DAY;
+    this.#filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+    this.#newPointPresenter.init(this.#offerModel,this.#destinationModel);
+  };
+
+  #onSortTypeChange = (changeSortType) => {
+    if(changeSortType === this.#actualSortType){
       return;
     }
+    this.#actualSortType = changeSortType;
+    this.#clearPointList({resetRenderedPointCount:true});
+    this.#renderPoints();
 
-    if(this.#mode === Mode.DEFAULT){
-      replace(this.#pointComponent,prevPointComponent);
+  };
+
+  #renderSort(){
+    this.#sortComponent = new SortView({currentSortType: this.#actualSortType, onSortTypeChange: this.#onSortTypeChange});
+    render(this.#sortComponent,this.#bigContainer,RenderPosition.AFTERBEGIN);
+  }
+
+  #renderPoints(){
+    const pointsCount = this.points.length;
+    if (pointsCount === 0){
+      render(new EmptyListView(this.#filterModel.filter),this.#listContainer,RenderPosition.AFTEREND);
+      return;
     }
-    if(this.#mode === Mode.EDITING){
-      replace(this.#editPointComponent,prevEditPointComponent);
-    }
-    remove(prevPointComponent);
-    remove(prevEditPointComponent);
-  }
-
-  destroy() {
-    remove(this.#pointComponent);
-    remove(this.#editPointComponent);
-  }
-
-  resetView(){
-    if(this.#mode !== Mode.DEFAULT){
-      this.#replaceFormToCard();
+    this.#renderSort();
+    for(let i = 0; i < pointsCount; i++){
+      const pointPresenter = new PointPresenter(
+        this.container,
+        this.offerModel,
+        this.destinationModel,
+        this.#onViewAction,
+        this.#onModeChange);
+      pointPresenter.init(this.points[i]);
+      this.#pointsPresenters.set(this.points[i].id,pointPresenter);
     }
   }
 
-  #replaceCardToForm(){
-    replace(this.#editPointComponent,this.#pointComponent);
-    document.addEventListener('keydown', this.#escKeyDownHandler);
-    this.#handleModeChange();
-    this.#mode = Mode.EDITING;
+  #clearPointList({resetSortType = false} = {}){
+    this.#newPointPresenter.destroy();
+    this.#pointsPresenters.forEach((pointPresenter)=>pointPresenter.destroy());
+    this.#pointsPresenters.clear();
+    remove(this.#sortComponent);
+    if (resetSortType) {
+      this.#actualSortType = SortType.DAY;
+    }
   }
 
-  #replaceFormToCard(){
-    replace(this.#pointComponent,this.#editPointComponent);
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
-    this.#mode = Mode.DEFAULT;
-  }
-
-  #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape') {
-      evt.preventDefault();
-      this.#replaceFormToCard();
+  #onViewAction = (actionType, updateType, update) => {
+    switch(actionType){
+      case UserAction.UPDATE_POINT:
+        this.#pointModel.updatePoints(updateType, update);
+        break;
+      case UserAction.ADD_POINT:
+        this.#pointModel.addPoints(updateType, update);
+        break;
+      case UserAction.DELETE_POINT:
+        this.#pointModel.deletePoints(updateType, update);
+        break;
     }
   };
 
-  #onPointButtonClick = ()=> {
-    this.#replaceCardToForm();
+  #onModeChange = () =>{
+    this.#newPointPresenter.destroy();
+    this.#pointsPresenters.forEach((pointPresenter)=>pointPresenter.resetView());
   };
 
-  #onEditButtonClick = ()=> {
-    this.#replaceFormToCard();
+  #onModelEvent = (updateType,update) => {
+    switch (updateType) {
+      case UpdateType.PATCH:
+        this.#pointsPresenters.get(update.id).init(update);
+        break;
+      case UpdateType.MINOR:
+        this.#clearPointList();
+        this.#renderPoints();
+        break;
+      case UpdateType.MAJOR:
+        this.#clearPointList({resetRenderedPointCount: true, resetSortType: true});
+        this.#renderPoints();
+        break;
+    }
   };
 
-  #onFormSubmit = (evt,editPoint)=> {
-    evt.preventDefault();
-    this.#handlePointChange(editPoint);
-    this.#replaceFormToCard();
-  };
+  get container(){
+    return this.#listContainer;
+  }
 }

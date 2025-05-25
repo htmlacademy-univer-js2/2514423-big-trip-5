@@ -55,7 +55,7 @@ const mockOffers = [
       {
         'id': '9792b095-9ba3-49dd-aa89-294fa766a8b5',
         'title': 'Book a taxi at the arrival point',
-        'price': 127
+        'price': 117
       },
       {
         'id': 'e4e4d5ec-a2d4-49d0-91ba-c69051434409',
@@ -75,17 +75,12 @@ const mockOffers = [
       {
         'id': '61edb370-0975-455e-b96a-131d57ee2f36',
         'title': 'Choose meal',
-        'price': 157
+        'price': 197
       },
       {
         'id': 'b0a248ed-d9ab-4d3b-b1f0-534c80eb061a',
         'title': 'Choose seats',
-        'price': 157
-      },
-      {
-        'id': 'dcc0a2bb-a283-455b-9d39-bfc275c949ee',
-        'title': 'Upgrade to business class',
-        'price': 82
+        'price': 127
       },
       {
         'id': '4482f13d-a7c0-418d-81d0-15138c88aa2f',
@@ -93,14 +88,19 @@ const mockOffers = [
         'price': 139
       },
       {
+        'id': 'dcc0a2bb-a283-455b-9d39-bfc275c949ee',
+        'title': 'Upgrade to business class',
+        'price': 87
+      },
+      {
         'id': '45766f0f-6823-47e9-829a-2fa2af7b822f',
         'title': 'Add luggage',
-        'price': 69
+        'price': 79
       },
       {
         'id': '6746333a-54d2-4414-ae0c-7c8d7307bb0c',
         'title': 'Business lounge',
-        'price': 55
+        'price': 35
       }
     ]
   },
@@ -110,12 +110,12 @@ const mockOffers = [
       {
         'id': '39f7a61b-266a-412f-94e7-16574c29c7db',
         'title': 'Choose the time of check-in',
-        'price': 47
+        'price': 37
       },
       {
         'id': '238facd7-821c-4496-9529-e514e552921d',
         'title': 'Choose the time of check-out',
-        'price': 132
+        'price': 148
       },
       {
         'id': '99d297fc-7cf7-485c-bc93-f779a20fe586',
@@ -125,12 +125,12 @@ const mockOffers = [
       {
         'id': '1bec5c4b-bf37-41bb-8cde-2d745d97bd8a',
         'title': 'Laundry',
-        'price': 127
+        'price': 157
       },
       {
         'id': '52863e5d-fd8b-4c8b-8e30-cc928591575c',
         'title': 'Order a meal from the restaurant',
-        'price': 142
+        'price': 183
       }
     ]
   },
@@ -144,33 +144,32 @@ const mockOffers = [
       {
         'id': 'c6d0f11e-4319-4160-9f78-87ae3300ac03',
         'title': 'Choose meal',
-        'price': 123
+        'price': 169
       },
       {
         'id': '520bc29f-33ae-4967-be90-66d3e2814780',
         'title': 'Choose seats',
-        'price': 166
+        'price': 149
       },
       {
         'id': '9cb90f34-6d85-4b6b-9bfd-2e6c7b49edcc',
         'title': 'Upgrade to comfort class',
-        'price': 134
-      },
-      {
-        'id': '632fb37e-8f25-4366-9e47-6ad37f427eac',
-        'title': 'Add luggage',
-        'price': 43
+        'price': 149
       },
       {
         'id': '544d05b7-4ea4-433d-b762-ad36526a2441',
         'title': 'Upgrade to business class',
         'price': 105
       },
-
+      {
+        'id': '632fb37e-8f25-4366-9e47-6ad37f427eac',
+        'title': 'Add luggage',
+        'price': 45
+      },
       {
         'id': 'c6ae1f94-8ca3-48ed-80e9-8ffd9980fa3a',
         'title': 'Business lounge',
-        'price': 137
+        'price': 173
       }
     ]
   },
@@ -180,12 +179,12 @@ const mockOffers = [
       {
         'id': 'e0109513-3cd2-4ea4-9c09-73249c3f08ae',
         'title': 'With automatic transmission',
-        'price': 83
+        'price': 63
       },
       {
         'id': '31eca166-d3dd-40a1-821d-5578f4956b64',
         'title': 'With air conditioning',
-        'price': 53
+        'price': 85
       }
     ]
   },
@@ -195,12 +194,12 @@ const mockOffers = [
       {
         'id': '5677bd9a-5eaa-4792-ad08-4ee68690dabf',
         'title': 'Choose live music',
-        'price': 138
+        'price': 118
       },
       {
         'id': 'b9e25117-ed0f-44c8-a4f6-1f6de372d235',
         'title': 'Choose VIP area',
-        'price': 152
+        'price': 109
       }
     ]
   }

@@ -1,6 +1,8 @@
 import { render, replace,remove } from '../framework/render';
-import EditForm from '../view/edit-form-view';
-import Point from '../view/point-view';
+import EditFormView from '../view/edit-form-view';
+import PointView from '../view/point-view';
+import {UserAction, UpdateType} from '../const.js';
+import {isDatesEqual} from '../utils/utls.js';
 
 const Mode = {
   DEFAULT: 'DEFAULT',
@@ -14,16 +16,16 @@ export default class PointPresenter{
   #destinationModel;
   #pointComponent = null;
   #editPointComponent = null;
-  #handlePointChange;
-  #handleModeChange;
+  #onPointChange;
+  #onModeChange;
   #mode = Mode.DEFAULT;
 
-  constructor(pointListContainer,offerModel,destinationModel,handlePointChange,handleModeChange){
+  constructor(pointListContainer,offerModel,destinationModel,onPointChange,onModeChange){
     this.#pointListContainer = pointListContainer;
     this.#offerModel = offerModel;
     this.#destinationModel = destinationModel;
-    this.#handlePointChange = handlePointChange;
-    this.#handleModeChange = handleModeChange;
+    this.#onPointChange = onPointChange;
+    this.#onModeChange = onModeChange;
   }
 
   init(pointData){
@@ -31,10 +33,21 @@ export default class PointPresenter{
     const prevPointComponent = this.#pointComponent;
     const prevEditPointComponent = this.#editPointComponent;
 
-    this.#pointComponent = new Point(this.#pointModel,this.#offerModel,this.#destinationModel,
-      this.#onPointButtonClick,this.#handlePointChange);
-    this.#editPointComponent = new EditForm(this.#pointModel,this.#offerModel,this.#destinationModel,
-      this.#onFormSubmit,this.#onEditButtonClick);
+    this.#pointComponent = new PointView(
+      this.#pointModel,
+      this.#offerModel,
+      this.#destinationModel,
+      this.#onPointButtonClick,
+      this.#onFavoriteButtonClick);
+
+    this.#editPointComponent = new EditFormView(
+      this.#pointModel,
+      this.#offerModel,
+      this.#destinationModel,
+      this.#onFormSubmit,
+      this.#onDeleteClick,
+      this.#onEditButtonClick
+    );
 
     if(prevPointComponent === null || prevEditPointComponent === null){
       render(this.#pointComponent,this.#pointListContainer);
@@ -65,7 +78,7 @@ export default class PointPresenter{
   #replaceCardToForm(){
     replace(this.#editPointComponent,this.#pointComponent);
     document.addEventListener('keydown', this.#escKeyDownHandler);
-    this.#handleModeChange();
+    this.#onModeChange();
     this.#mode = Mode.EDITING;
   }
 
@@ -90,9 +103,28 @@ export default class PointPresenter{
     this.#replaceFormToCard();
   };
 
+  #onFavoriteButtonClick = () => {
+    this.#onPointChange(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
+      {...this.#pointModel,isFavorite:!this.#pointModel.isFavorite});
+  };
+
   #onFormSubmit = (evt,editPoint)=> {
     evt.preventDefault();
-    this.#handlePointChange(editPoint);
+    const isMinorUpdate = !isDatesEqual(this.#pointModel.dateFrom, editPoint.dateTo);
+    this.#onPointChange(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      editPoint);
     this.#replaceFormToCard();
+  };
+
+  #onDeleteClick = (point) => {
+    this.#onPointChange(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
+    );
   };
 }

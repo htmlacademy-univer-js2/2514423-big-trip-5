@@ -1,6 +1,6 @@
 const mockDestinations = [
   {
-    'id': '1-6f2a-4ae1-840a-dfd9638e90c9',
+    'id': '6ddb8115-6f2a-4ae1-840a-dfd9638e90c9',
     'description': 'Amsterdam - is a beautiful city',
     'name': 'Amsterdam',
     'pictures': [
@@ -15,27 +15,22 @@ const mockDestinations = [
       {
         'src': 'https://24.objects.htmlacademy.pro/static/destinations/9.jpg',
         'description': 'Amsterdam a true asian pearl'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/16.jpg',
+        'description': 'Amsterdam with crowded streets'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/15.jpg',
+        'description': 'Amsterdam with an embankment of a mighty river as a centre of attraction'
       }
     ]
   },
   {
-    'id': 'f0e7a74a-f073-4bb7-b287-45cf5eddba7b',
-    'description': 'Monaco - with an embankment of a mighty river as a centre of attraction',
-    'name': 'Monaco',
-    'pictures': [
-      {
-        'src': 'https://24.objects.htmlacademy.pro/static/destinations/1.jpg',
-        'description': 'Monaco a perfect place to stay with a family'
-      },
-      {
-        'src': 'https://24.objects.htmlacademy.pro/static/destinations/7.jpg',
-        'description': 'Monaco a perfect place to stay with a family'
-      },
-      {
-        'src': 'https://24.objects.htmlacademy.pro/static/destinations/14.jpg',
-        'description': 'Monaco a true asian pearl'
-      }
-    ]
+    'id': 'acc9c42e-e6b0-43b7-afc3-daf2a00f81ab',
+    'description': 'Berlin - with crowded streets',
+    'name': 'Berlin',
+    'pictures': []
   },
   {
     'id': '14f0beed-df7b-4df0-a646-6dad26c4ca56',
@@ -49,6 +44,14 @@ const mockDestinations = [
       {
         'src': 'https://24.objects.htmlacademy.pro/static/destinations/7.jpg',
         'description': 'Nagasaki full of of cozy canteens where you can try the best coffee in the Middle East'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/5.jpg',
+        'description': 'Nagasaki full of of cozy canteens where you can try the best coffee in the Middle East'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/8.jpg',
+        'description': 'Nagasaki is a beautiful city'
       }
     ]
   },
@@ -70,6 +73,14 @@ const mockDestinations = [
       {
         'src': 'https://24.objects.htmlacademy.pro/static/destinations/1.jpg',
         'description': 'Valencia is a beautiful city'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/14.jpg',
+        'description': 'Valencia for those who value comfort and coziness'
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/3.jpg',
+        'description': 'Valencia full of of cozy canteens where you can try the best coffee in the Middle East'
       }
     ]
   },
@@ -112,7 +123,11 @@ const mockDestinations = [
       {
         'src': 'https://24.objects.htmlacademy.pro/static/destinations/8.jpg',
         'description': 'Kioto for those who value comfort and coziness'
-      }
+      },
+      {
+        'src': 'https://24.objects.htmlacademy.pro/static/destinations/16.jpg',
+        'description': 'Kioto with an embankment of a mighty river as a centre of attraction'
+      },
     ]
   },
   {

@@ -61,6 +61,10 @@ function sortPointByTime(pointA, pointB) {
   return durationB - durationA;
 }
 
+function isDatesEqual(dateA, dateB) {
+  return (dateA === null && dateB === null) || dayjs(dateA).isSame(dateB, 'D');
+}
+
 export {
   getRandomInteger,
   humanizeDate,
@@ -72,4 +76,5 @@ export {
   isPastPoint,
   sortPointByDay,
   sortPointByTime,
+  isDatesEqual,
 };
