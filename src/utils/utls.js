@@ -51,6 +51,16 @@ function isFuturePoint(dueDate) {
   return dueDate && dayjs().isBefore(dueDate, 'D');
 }
 
+function sortPointByDay(pointA, pointB) {
+  return dayjs(pointA.dateFrom).diff(dayjs(pointB.dateFrom));
+}
+
+function sortPointByTime(pointA, pointB) {
+  const durationA = dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom));
+  const durationB = dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom));
+  return durationB - durationA;
+}
+
 export {
   getRandomInteger,
   humanizeDate,
@@ -59,5 +69,7 @@ export {
   getOfferKeyword,
   isPresentPoint,
   isFuturePoint,
-  isPastPoint
+  isPastPoint,
+  sortPointByDay,
+  sortPointByTime,
 };

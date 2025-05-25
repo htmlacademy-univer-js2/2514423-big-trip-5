@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import { capitalizeString, humanizeDate, getOfferKeyword } from '../utils/utils.js';
+import { capitalizeString, humanizeDate, getOfferKeyword } from '../utils/utls.js';
 
 function createFormTemplate(pointModel,offerModel,destinationModel){
   const {
@@ -158,7 +158,7 @@ function createFormTemplate(pointModel,offerModel,destinationModel){
   `;
 }
 
-export default class EditForm extends AbstractView{
+export default class EditFormView extends AbstractView{
   #pointModel;
   #offerModel;
   #destinationModel;
