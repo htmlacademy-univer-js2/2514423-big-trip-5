@@ -4,13 +4,15 @@ import FilterModel from './model/filter-model.js';
 import PointModel from './model/point-model.js';
 import OfferModel from './model/offer-model.js';
 import DestinationModel from './model/destination-model.js';
+import {nanoid} from 'nanoid';
 import NewPointView from './view/new-point.js';
 import PointsApi from './api/point-api.js';
 import OffersApi from './api/offer-api.js';
 import DestinationsApi from './api/destination-api.js';
 import { render, RenderPosition } from './framework/render.js';
+import RoutePresenter from './presenter/route-presenter.js';
 
-const authorization = 'Basic ssj52f854f3h3v9f';
+const authorization = `Basic ${nanoid()}`;
 const endPoint = 'https://24.objects.htmlacademy.pro/big-trip';
 const siteHeaderFiltersElement = document.querySelector('.trip-controls__filters');
 const siteBodySortElement = document.querySelector('.trip-events');
@@ -32,7 +34,7 @@ const mainPresenter = new MainPresenter(
   filterModel,
   onNewPointFormClose
 );
-
+new RoutePresenter(siteHeaderElement, pointModel, offerModel, destinationModel);
 const newPointButtonComponent = new NewPointView(onNewPointButtonClick);
 
 function onNewPointFormClose() {
@@ -44,12 +46,12 @@ function onNewPointButtonClick() {
   newPointButtonComponent.element.disabled = true;
 }
 render(newPointButtonComponent,siteHeaderElement,RenderPosition.BEFOREEND);
-filterPresenter.init();
-mainPresenter.init();
+
 Promise.all([
   pointModel.init(),
   offerModel.init(),
   destinationModel.init()
 ]).then(() => {
-  render(newPointButtonComponent, siteHeaderElement, RenderPosition.BEFOREEND);
+  filterPresenter.init();
+  mainPresenter.init();
 });
