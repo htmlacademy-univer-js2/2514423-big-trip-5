@@ -1,17 +1,17 @@
 import AbstractView from '../framework/view/abstract-view.js';
-function createEmptyListTemplate(){
+function createEmptyListTemplate() {
   return '<button class="trip-main__event-add-btn  btn  btn--big  btn--yellow" type="button">New event</button>';
 }
 
-export default class NewPointView extends AbstractView{
+export default class NewPointView extends AbstractView {
   #onClick;
-  constructor(onClick){
+  constructor(onClick) {
     super();
     this.#onClick = onClick;
     this.element.addEventListener('click', this.#onNewEventClick);
   }
 
-  get template(){
+  get template() {
     return createEmptyListTemplate();
   }
 

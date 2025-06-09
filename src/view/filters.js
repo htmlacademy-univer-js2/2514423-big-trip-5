@@ -1,10 +1,10 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { capitalizeString } from '../utils/utils.js';
 
-function createFilterTemplate(filters,actualFilterType){
+function createFilterTemplate(filters, actualFilterType) {
   return `
   <form class="trip-filters" action="#" method="get">
-    ${filters.length > 0 ? filters.map(({type,count})=>
+    ${filters.length > 0 ? filters.map(({ type, count }) =>
     `<div class="trip-filters__filter">
       <input
         id="filter-${type}"
@@ -23,11 +23,11 @@ function createFilterTemplate(filters,actualFilterType){
 `;
 }
 
-export default class Filter extends AbstractView{
+export default class Filter extends AbstractView {
   #filter;
   #actualFilterType;
   #onFilterTypeChange;
-  constructor(filter,actualFilterType,onFilterTypeChange){
+  constructor(filter, actualFilterType, onFilterTypeChange) {
     super();
     this.#filter = filter;
     this.#onFilterTypeChange = onFilterTypeChange;
@@ -35,12 +35,12 @@ export default class Filter extends AbstractView{
     this.element.addEventListener('change', this.#onFilterChange);
   }
 
+  get template() {
+    return createFilterTemplate(this.#filter, this.#actualFilterType);
+  }
+
   #onFilterChange = (evt) => {
     evt.preventDefault();
     this.#onFilterTypeChange(evt.target.value);
   };
-
-  get template(){
-    return createFilterTemplate(this.#filter, this.#actualFilterType);
-  }
 }

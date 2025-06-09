@@ -8,58 +8,55 @@ const HttpMethod = {
 };
 
 export default class PointsApi extends ApiService {
-  get points() {
-    return this._load({ url: 'points' }).then(ApiService.parseResponse);
-  }
-
-  async updatePoint(point) {
+  async updatePoint(updatedPoint) {
     const response = await this._load({
-      url: `points/${point.id}`,
+      url: `points/${updatedPoint.id}`,
       method: HttpMethod.PUT,
-      body: JSON.stringify(this.#adaptPointToServer(point)),
+      body: JSON.stringify(this.#convertToServerFormat(updatedPoint)),
       headers: new Headers({ 'Content-Type': 'application/json' }),
     });
 
     return await ApiService.parseResponse(response);
   }
 
-  async addPoint(point) {
+  async addPoint(newPoint) {
     const response = await this._load({
       url: 'points',
       method: HttpMethod.POST,
-      body: JSON.stringify(this.#adaptPointToServer(point)),
+      body: JSON.stringify(this.#convertToServerFormat(newPoint)),
       headers: new Headers({ 'Content-Type': 'application/json' }),
     });
-    const parsedResponse = await ApiService.parseResponse(response);
-    return parsedResponse;
+
+    return await ApiService.parseResponse(response);
   }
 
-  async deletePoint(point) {
-    const response = await this._load({
-      url: `points/${point.id}`,
+  async deletePoint(targetPoint) {
+    return await this._load({
+      url: `points/${targetPoint.id}`,
       method: HttpMethod.DELETE,
     });
-
-    return response;
   }
 
-  #adaptPointToServer(point) {
+  get points() {
+    return this._load({ url: 'points' }).then(ApiService.parseResponse);
+  }
+
+  #convertToServerFormat(point) {
     const adaptedPoint = {
       ...point,
       'base_price': point.basePrice,
       'date_from': point.dateFrom,
       'date_to': point.dateTo,
       'is_favorite': point.isFavorite,
-      'destination': point.destination.toString()
-
-
+      'destination': point.destination.toString(),
     };
 
+    delete adaptedPoint.basePrice;
     delete adaptedPoint.dateFrom;
     delete adaptedPoint.dateTo;
-    delete adaptedPoint.basePrice;
     delete adaptedPoint.isFavorite;
     delete adaptedPoint.typeOffers;
+
     return adaptedPoint;
   }
 }

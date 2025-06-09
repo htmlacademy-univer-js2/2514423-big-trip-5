@@ -1,53 +1,61 @@
 import { UpdateType } from '../const.js';
 import Observable from '../framework/observable.js';
 
+const NOT_FOUND_INDEX = -1;
+const ERROR_UPDATE_POINT = 'I can\'t update this point';
+const ERROR_DELETE_POINT = 'I can\'t delete this point';
+
 export default class PointModel extends Observable {
-  #pointsApi;
+  #pointsApiService;
   #points = [];
-  #loaded = false;
+  #isLoaded = false;
 
-  constructor(pointsApi) {
+  constructor(pointsApiService) {
     super();
-    this.#pointsApi = pointsApi;
-  }
-
-  async init() {
-    try {
-      const points = await this.#pointsApi.points;
-      this.#points = points.map(this.#adaptToClient);
-    } catch (error) {
-      this.#points = [];
-    }
-    this.#loaded = true;
-    this._notify(UpdateType.INIT);
+    this.#pointsApiService = pointsApiService;
   }
 
   get points() {
     return this.#points;
   }
 
-  get loaded() {
-    return this.#loaded;
+  get isLoaded() {
+    return this.#isLoaded;
   }
 
-  async updatePoints(updateType, update) {
+  async init() {
+    try {
+      const points = await this.#pointsApiService.points;
+      this.#points = points.map(this.#adaptToClient);
+    } catch (err) {
+      this.#points = [];
+    }
+    this.#isLoaded = true;
+    this._notify(UpdateType.INIT);
+  }
+
+  async updatePoint(updateType, update) {
     const index = this.#points.findIndex((point) => point.id === update.id);
-    if (index === - 1) {
-      throw new Error('I can\'t update this point');
+    if (index === NOT_FOUND_INDEX) {
+      throw new Error(ERROR_UPDATE_POINT);
     }
     try {
-      const response = await this.#pointsApi.updatePoints(update);
+      const response = await this.#pointsApiService.updatePoint(update);
       const updatePoint = this.#adaptToClient(response);
-      this.#points = [...this.#points.slice(0, index), updatePoint, ...this.#points.slice(index + 1)];
+      this.#points = [
+        ...this.#points.slice(0, index),
+        updatePoint,
+        ...this.#points.slice(index + 1),
+      ];
       this._notify(updateType, updatePoint);
-    } catch(error) {
-      throw new Error('I can\'t update this point');
+    } catch (err) {
+      throw new Error(ERROR_UPDATE_POINT);
     }
   }
 
   async addPoint(updateType, update) {
     try {
-      const response = await this.#pointsApi.addPoint(update);
+      const response = await this.#pointsApiService.addPoint(update);
       const newPoint = this.#adaptToClient(response);
       this.#points = [...this.#points, newPoint];
       this._notify(updateType, update);
@@ -58,15 +66,18 @@ export default class PointModel extends Observable {
 
   async deletePoint(updateType, update) {
     const index = this.#points.findIndex((point) => point.id === update.id);
-    if (index === - 1) {
-      throw new Error('I can\'t delete this point');
+    if (index === NOT_FOUND_INDEX) {
+      throw new Error(ERROR_DELETE_POINT);
     }
     try {
-      await this.#pointsApi.deletePoint(update);
-      this.#points = [...this.#points.slice(0, index), ...this.#points.slice(index + 1)];
+      await this.#pointsApiService.deletePoint(update);
+      this.#points = [
+        ...this.#points.slice(0, index),
+        ...this.#points.slice(index + 1),
+      ];
       this._notify(updateType, update);
     } catch (err) {
-      throw new Error('I can\'t delete this point');
+      throw new Error(ERROR_DELETE_POINT);
     }
   }
 
