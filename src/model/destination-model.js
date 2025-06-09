@@ -1,35 +1,40 @@
-import { UpdateType } from '../const';
-import Observable from '../framework/observable';
+import { UpdateType } from '../const.js';
+import Observable from '../framework/observable.js';
 
-export default class DestinationModel extends Observable {
-  #destinationList = [];
-  #destinationsApi;
-  #loaded = false;
+export default class DestinationsModel extends Observable {
+  #destinations = [];
+  #destinationsApiService;
+  #isLoaded = false;
 
-  constructor(destinationsApi) {
+  constructor(destinationsApiService) {
     super();
-    this.#destinationsApi = destinationsApi;
+    this.#destinationsApiService = destinationsApiService;
+  }
+
+  get destinations() {
+    return this.#destinations;
+  }
+
+  get isLoaded() {
+    return this.#isLoaded;
+  }
+
+  getDestinationById(id) {
+    return this.#destinations.find((destination) => destination.id === id) || {
+      name: '',
+      description: '',
+      pictures: [],
+    };
   }
 
   async init() {
     try {
-      this.#destinationList = await this.#destinationsApi.destinationList;
+      this.#destinations = await this.#destinationsApiService.destinations;
     } catch (err) {
-      this.#destinationList = [];
+      this.#destinations = [];
     }
-    this.#loaded = true;
+
+    this.#isLoaded = true;
     this._notify(UpdateType.INIT);
-  }
-
-  get destinationList() {
-    return this.#destinationList;
-  }
-
-  get loaded() {
-    return this.#loaded;
-  }
-
-  getDestinationById(destinationId) {
-    return this.#destinationList.find((item) => item.destinationId === destinationId) || { name: '', description: '', pictures: [] };
   }
 }

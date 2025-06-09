@@ -1,62 +1,64 @@
-import {remove, render, RenderPosition} from '../framework/render.js';
-import {UserAction, UpdateType} from '../const.js';
+import { remove, render, RenderPosition } from '../framework/render.js';
+import { UserAction, UpdateType } from '../const.js';
 import EditFormView from '../view/edit-form.js';
+import { OnEscKeyDown } from '../utils/utils.js';
 
-export default class NewPointPresenter {
-  #pointsListElement = null;
-  #handleDataChange = null;
-  #handleDestroy = null;
+export default class NewPointFormPresenter {
+  #eventsListContainer = null;
+  #onDataChangeCallback = null;
+  #onFormDestroyCallback = null;
 
-  #editPointView = null;
+  #editFormComponent = null;
 
-  constructor(pointsListElement, handleDataChange, handleDestroy) {
-    this.#pointsListElement = pointsListElement;
-    this.#handleDataChange = handleDataChange;
-    this.#handleDestroy = handleDestroy;
+  constructor(eventsListContainer, onDataChangeCallback, onFormDestroyCallback) {
+    this.#eventsListContainer = eventsListContainer;
+    this.#onDataChangeCallback = onDataChangeCallback;
+    this.#onFormDestroyCallback = onFormDestroyCallback;
   }
 
-  init(offerModel,destinationModel) {
-    if (this.#editPointView !== null) {
+  init(offersModel, destinationsModel) {
+    if (this.#editFormComponent !== null) {
       return;
     }
+
     const blankPoint = {
       basePrice: 0,
-      dateFrom: new Date().toISOString(),
-      dateTo: new Date().toISOString(),
-      destination: 1,
+      dateFrom: '',
+      dateTo: '',
+      destination: '',
       offers: [],
       type: 'flight',
-      isFavorite: false
+      isFavorite: false,
     };
 
-    this.#editPointView = new EditFormView(
+    this.#editFormComponent = new EditFormView(
       blankPoint,
-      offerModel,
-      destinationModel,
-      this.#onFormSubmit,
-      this.#onDeleteClick
+      offersModel,
+      destinationsModel,
+      this.#handleFormSubmit,
+      this.#handleCancelClick
     );
 
-    render(this.#editPointView, this.#pointsListElement, RenderPosition.AFTERBEGIN);
+    render(this.#editFormComponent, this.#eventsListContainer, RenderPosition.AFTERBEGIN);
 
-    document.addEventListener('keydown', this.#escKeyDownHandler);
+    document.addEventListener('keydown', this.#handleEscKeyDown);
   }
 
   destroy() {
-    if (this.#editPointView === null) {
+    if (this.#editFormComponent === null) {
       return;
     }
 
-    this.#handleDestroy();
+    this.#onFormDestroyCallback();
 
-    remove(this.#editPointView);
-    this.#editPointView = null;
+    remove(this.#editFormComponent);
+    this.#editFormComponent = null;
 
-    document.removeEventListener('keydown', this.#escKeyDownHandler);
+    document.removeEventListener('keydown', this.#handleEscKeyDown);
   }
 
   setSaving() {
-    this.#editPointView.updateElement({
+    this.#editFormComponent.updateElement({
       isDisabled: true,
       isSaving: true,
     });
@@ -64,33 +66,29 @@ export default class NewPointPresenter {
 
   setAborting() {
     const resetFormState = () => {
-      this.#editPointView.updateElement({
+      this.#editFormComponent.updateElement({
         isDisabled: false,
         isSaving: false,
         isDeleting: false,
       });
     };
 
-    this.#editPointView.shake(resetFormState);
+    this.#editFormComponent.shake(resetFormState);
   }
 
-  #onFormSubmit = (_, point) => {
-    this.#handleDataChange(
+  #handleFormSubmit = (_, newPointData) => {
+    this.#onDataChangeCallback(
       UserAction.ADD_POINT,
       UpdateType.MINOR,
-      point,
+      newPointData,
     );
+  };
+
+  #handleCancelClick = () => {
     this.destroy();
   };
 
-  #onDeleteClick = () => {
-    this.destroy();
-  };
-
-  #escKeyDownHandler = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
-      this.destroy();
-    }
+  #handleEscKeyDown = (evt) => {
+    OnEscKeyDown(evt, this.destroy.bind(this));
   };
 }

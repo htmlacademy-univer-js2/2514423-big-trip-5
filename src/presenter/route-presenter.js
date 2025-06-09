@@ -1,92 +1,98 @@
 import { render, RenderPosition, replace } from '../framework/render.js';
 import RouteView from '../view/route-view.js';
 
-const generateRouteTitle = (points, destinationModel) => {
+const generateRouteTitle = (points, destinationsModel) => {
   if (points.length === 0) {
     return '';
   }
 
   const sortedPoints = points.slice().sort((a, b) => new Date(a.dateFrom) - new Date(b.dateFrom));
-  const cityNames = sortedPoints.map((point) => {
-    const destination = destinationModel.getDestinationById(point.destination);
+  const cities = sortedPoints.map((point) => {
+    const destination = destinationsModel.getDestinationById(point.destination);
     return destination && destination.name ? destination.name : point.destination;
   });
-  return cityNames.length > 3
-    ? `${cityNames[0]} — … — ${cityNames[cityNames.length - 1]}`
-    : cityNames.join(' — ');
+
+  return cities.length > 3
+    ? `${cities[0]} — … — ${cities[cities.length - 1]}`
+    : cities.join(' — ');
 };
 
 const formatTripDates = (points) => {
   if (points.length === 0) {
     return '';
   }
+
   const sortedPoints = points.slice().sort((a, b) => new Date(a.dateFrom) - new Date(b.dateFrom));
-  const lastDate = new Date(sortedPoints[sortedPoints.length - 1].dateTo);
-  const firstDate = new Date(sortedPoints[0].dateFrom);
+  const startDate = new Date(sortedPoints[0].dateFrom);
+  const endDate = new Date(sortedPoints[sortedPoints.length - 1].dateTo);
 
   if (
-    firstDate.getMonth() === lastDate.getMonth() &&
-    firstDate.getFullYear() === lastDate.getFullYear()
+    startDate.getMonth() === endDate.getMonth() &&
+    startDate.getFullYear() === endDate.getFullYear()
   ) {
-    return `${firstDate.getDate()} — ${lastDate.getDate()} ${lastDate.toLocaleString('en-US', {
+    return `${startDate.getDate()} — ${endDate.getDate()} ${endDate.toLocaleString('en-US', {
       month: 'short',
     })}`;
   }
 
   const options = { day: 'numeric', month: 'short' };
-  return `${firstDate.toLocaleDateString('en-US', options)} — ${lastDate.toLocaleDateString('en-US', options)}`;
+  return `${startDate.toLocaleDateString('en-US', options)} — ${endDate.toLocaleDateString('en-US', options)}`;
 };
 
-const calculateTotalCost = (points, offerModel) => points.reduce((total, point) => {
-  const basePrice = Number(point.basePrice);
-  const offersTotal = (point.offers || []).reduce((offerSum, offerId) => {
-    const offer = offerModel.getOfferById(point.type, offerId);
-    return offer ? offerSum + Number(offer.price) : offerSum;
+const calculateTotalCost = (points, offersModel) =>
+  points.reduce((total, point) => {
+    const basePrice = Number(point.basePrice);
+    const offersTotal = (point.offers || []).reduce((sum, offerId) => {
+      const foundOffer = offersModel.getOfferById(point.type, offerId);
+      return foundOffer ? sum + Number(foundOffer.price) : sum;
+    }, 0);
+
+    return total + basePrice + offersTotal;
   }, 0);
-  return total + basePrice + offersTotal;
-}, 0);
 
 export default class RoutePresenter {
-  #routeContainer = null;
-  #offerModel = null;
-  #destinationModel = null;
-  #pointModel = null;
-  #routeView = null;
+  #container = null;
+  #pointsModel = null;
+  #offersModel = null;
+  #destinationsModel = null;
 
-  constructor(container, pointModel, offerModel, destinationModel) {
-    this.#routeContainer = container;
-    this.#pointModel = pointModel;
-    this.#offerModel = offerModel;
-    this.#destinationModel = destinationModel;
+  #routeComponent = null;
 
-    this.#pointModel.addObserver(this.handleModelEvent);
-    this.#destinationModel.addObserver(this.handleModelEvent);
-    this.#offerModel.addObserver(this.handleModelEvent);
+  constructor(container, pointsModel, offersModel, destinationsModel) {
+    this.#container = container;
+    this.#pointsModel = pointsModel;
+    this.#offersModel = offersModel;
+    this.#destinationsModel = destinationsModel;
 
-    this.renderRoute();
+    this.#pointsModel.addObserver(this.#handleModelEvent);
+    this.#destinationsModel.addObserver(this.#handleModelEvent);
+    this.#offersModel.addObserver(this.#handleModelEvent);
+
+    this.#renderRoute();
   }
 
-  handleModelEvent = () => {
-    this.renderRoute();
-  };
-
-  renderRoute = () => {
-    const points = this.#pointModel.points;
-    const routeTitle = generateRouteTitle(points, this.#destinationModel);
+  #renderRoute = () => {
+    const points = this.#pointsModel.points;
+    const routeTitle = generateRouteTitle(points, this.#destinationsModel);
     const tripDates = formatTripDates(points);
-    const totalCost = calculateTotalCost(points, this.#offerModel);
+    const totalCost = calculateTotalCost(points, this.#offersModel);
 
-    const prevRouteView = this.#routeView;
-    this.#routeView = new RouteView({
+    const prevRouteComponent = this.#routeComponent;
+
+    this.#routeComponent = new RouteView({
       routeTitle,
       tripDates,
       totalCost,
     });
 
-    if (prevRouteView === null) {
-      render(this.#routeView, this.#routeContainer, RenderPosition.AFTERBEGIN);
+    if (prevRouteComponent === null) {
+      render(this.#routeComponent, this.#container, RenderPosition.AFTERBEGIN);
     } else {
-      replace(this.#routeView, prevRouteView);
+      replace(this.#routeComponent, prevRouteComponent);
     }
+  };
+
+  #handleModelEvent = () => {
+    this.#renderRoute();
   };
 }

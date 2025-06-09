@@ -4,28 +4,32 @@ import FilterModel from './model/filter-model.js';
 import PointModel from './model/point-model.js';
 import OfferModel from './model/offer-model.js';
 import DestinationModel from './model/destination-model.js';
-import {nanoid} from 'nanoid';
 import NewPointView from './view/new-point.js';
-import PointsApi from './api/point-api.js';
-import OffersApi from './api/offer-api.js';
-import DestinationsApi from './api/destination-api.js';
 import { render, RenderPosition } from './framework/render.js';
+import PointsApiService from './api/point-api.js';
+import OffersApiService from './api/offer-api.js';
+import DestinationsApiService from './api/destination-api.js';
 import RoutePresenter from './presenter/route-presenter.js';
 
-const authorization = `Basic ${nanoid()}`;
-const endPoint = 'https://24.objects.htmlacademy.pro/big-trip';
-const siteHeaderFiltersElement = document.querySelector('.trip-controls__filters');
+const AUTHORIZATION = 'Basic 92k5hj4n4bdm4q2f';
+const API_URL = 'https://24.objects.htmlacademy.pro/big-trip';
+const filterContainer = document.querySelector('.trip-controls__filters');
 const siteBodySortElement = document.querySelector('.trip-events');
-const siteHeaderElement = document.querySelector('.trip-main');
+const tripHeaderContainer = document.querySelector('.trip-main');
+
 const filterModel = new FilterModel();
-const pointModel = new PointModel(new PointsApi(endPoint, authorization));
-const offerModel = new OfferModel(new OffersApi(endPoint, authorization));
-const destinationModel = new DestinationModel(new DestinationsApi(endPoint, authorization));
+const pointModel = new PointModel(new PointsApiService(API_URL, AUTHORIZATION));
+const offerModel = new OfferModel(new OffersApiService(API_URL, AUTHORIZATION));
+const destinationModel = new DestinationModel(new DestinationsApiService(API_URL, AUTHORIZATION));
+
+new RoutePresenter(tripHeaderContainer, pointModel, offerModel, destinationModel);
+
 const filterPresenter = new FilterPresenter(
-  siteHeaderFiltersElement,
+  filterContainer,
   filterModel,
   pointModel
 );
+
 const mainPresenter = new MainPresenter(
   siteBodySortElement,
   pointModel,
@@ -34,7 +38,7 @@ const mainPresenter = new MainPresenter(
   filterModel,
   onNewPointFormClose
 );
-new RoutePresenter(siteHeaderElement, pointModel, offerModel, destinationModel);
+
 const newPointButtonComponent = new NewPointView(onNewPointButtonClick);
 
 function onNewPointFormClose() {
@@ -42,16 +46,17 @@ function onNewPointFormClose() {
 }
 
 function onNewPointButtonClick() {
-  mainPresenter.createNewPoint();
+  mainPresenter.createPoint();
   newPointButtonComponent.element.disabled = true;
 }
-render(newPointButtonComponent,siteHeaderElement,RenderPosition.BEFOREEND);
+
+filterPresenter.init();
+mainPresenter.init();
 
 Promise.all([
   pointModel.init(),
   offerModel.init(),
   destinationModel.init()
 ]).then(() => {
-  filterPresenter.init();
-  mainPresenter.init();
+  render(newPointButtonComponent, tripHeaderContainer, RenderPosition.BEFOREEND);
 });

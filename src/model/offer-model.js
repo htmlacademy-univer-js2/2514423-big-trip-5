@@ -4,41 +4,41 @@ import Observable from '../framework/observable';
 const FIRST_ELEMENT = 0;
 
 export default class OfferModel extends Observable {
-  #offerList = [];
-  #offersApi;
+  #offers = [];
+  #offersApiService;
   #isLoaded = false;
 
-  constructor(offersApi) {
+  constructor(offersApiService) {
     super();
-    this.#offersApi = offersApi;
+    this.#offersApiService = offersApiService;
   }
 
-  async init() {
-    try {
-      this.#offerList = await this.#offersApi.offerList;
-    } catch (err) {
-      this.#offerList = [];
-    }
-    this.#isLoaded = true;
-    this._notify(UpdateType.INIT);
-  }
-
-  get offerList() {
-    return this.#offerList;
+  get offers() {
+    return this.#offers;
   }
 
   get isLoaded() {
     return this.#isLoaded;
   }
 
-  getOfferById(type, offerId) {
-    if (this.#offerList.length === 0) {
+  getOfferById(type, id) {
+    if (this.#offers.length === 0) {
       return;
     }
-    return this.#offerList.filter((offer) => offer.type === type)[FIRST_ELEMENT].offers.find((item) => item.offerId === offerId);
+    return this.#offers.filter((offer) => offer.type === type)[FIRST_ELEMENT].offers.find((item) => item.id === id);
   }
 
   getOfferByType(type) {
-    return this.#offerList.filter((offer) => offer.type === type).map((offer) => offer.offers).flat();
+    return this.#offers.filter((offer) => offer.type === type).map((offer) => offer.offers).flat();
+  }
+
+  async init() {
+    try {
+      this.#offers = await this.#offersApiService.offers;
+    } catch (err) {
+      this.#offers = [];
+    }
+    this.#isLoaded = true;
+    this._notify(UpdateType.INIT);
   }
 }
